@@ -1,0 +1,620 @@
+{% extends "base.html" %}
+
+{% block title %}Configurações da Barbearia{% endblock %}
+{% block page_title %}Configurações da Barbearia{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-2 gap-6">
+    <!-- Formulário de Configurações -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i data-lucide="settings"></i>
+                Configurações Gerais
+            </h3>
+            <p class="card-subtitle">Configure as informações da sua barbearia</p>
+        </div>
+
+        <form method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="nome_barbearia" class="form-label">
+                    <i data-lucide="store"></i>
+                    Nome da Barbearia
+                </label>
+                <input type="text" 
+                       id="nome_barbearia" 
+                       name="nome_barbearia" 
+                       class="form-input" 
+                       value="{{ configuracoes.nome_barbearia if configuracoes else 'Barbearia Premium' }}"
+                       required>
+            </div>
+
+            <div class="form-group">
+                <label for="logo_barbearia" class="form-label">
+                    <i data-lucide="image"></i>
+                    Logo da Barbearia
+                </label>
+                <input type="file" 
+                       id="logo_barbearia" 
+                       name="logo_barbearia" 
+                       class="form-file"
+                       accept="image/*">
+                <small class="form-help">Deixe em branco para manter o logo atual</small>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div class="form-group">
+                    <label for="telefone_contato" class="form-label">
+                        <i data-lucide="phone"></i>
+                        Telefone de Contato
+                    </label>
+                    <input type="tel" 
+                           id="telefone_contato" 
+                           name="telefone_contato" 
+                           class="form-input" 
+                           value="{{ configuracoes.telefone_contato if configuracoes else '' }}"
+                           placeholder="(11) 3333-4444">
+                </div>
+
+                <div class="form-group">
+                    <label for="whatsapp_contato" class="form-label">
+                        <i data-lucide="message-circle"></i>
+                        WhatsApp
+                    </label>
+                    <input type="tel" 
+                           id="whatsapp_contato" 
+                           name="whatsapp_contato" 
+                           class="form-input" 
+                           value="{{ configuracoes.whatsapp_contato if configuracoes else '' }}"
+                           placeholder="11333344444">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="endereco" class="form-label">
+                    <i data-lucide="map-pin"></i>
+                    Endereço
+                </label>
+                <input type="text" 
+                       id="endereco" 
+                       name="endereco" 
+                       class="form-input" 
+                       value="{{ configuracoes.endereco if configuracoes else '' }}"
+                       placeholder="Rua das Flores, 123 - Centro">
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div class="form-group">
+                    <label for="horario_funcionamento" class="form-label">
+                        <i data-lucide="clock"></i>
+                        Horário de Funcionamento
+                    </label>
+                    <input type="text" 
+                           id="horario_funcionamento" 
+                           name="horario_funcionamento" 
+                           class="form-input" 
+                           value="{{ configuracoes.horario_funcionamento if configuracoes else '08:00-18:00' }}"
+                           placeholder="08:00-18:00">
+                </div>
+
+                <div class="form-group">
+                    <label for="dias_funcionamento" class="form-label">
+                        <i data-lucide="calendar"></i>
+                        Dias de Funcionamento
+                    </label>
+                    <input type="text" 
+                           id="dias_funcionamento" 
+                           name="dias_funcionamento" 
+                           class="form-input" 
+                           value="{{ configuracoes.dias_funcionamento if configuracoes else 'Segunda a Sábado' }}"
+                           placeholder="Segunda a Sábado">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="descricao" class="form-label">
+                    <i data-lucide="file-text"></i>
+                    Descrição
+                </label>
+                <textarea id="descricao" 
+                          name="descricao" 
+                          class="form-textarea" 
+                          rows="4"
+                          placeholder="Descreva sua barbearia...">{{ configuracoes.descricao if configuracoes else 'A melhor barbearia da cidade com profissionais qualificados' }}</textarea>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div class="form-group">
+                    <label for="instagram" class="form-label">
+                        <i data-lucide="instagram"></i>
+                        Instagram
+                    </label>
+                    <input type="text" 
+                           id="instagram" 
+                           name="instagram" 
+                           class="form-input" 
+                           value="{{ configuracoes.instagram if configuracoes else '' }}"
+                           placeholder="@barbearia_premium">
+                </div>
+
+                <div class="form-group">
+                    <label for="facebook" class="form-label">
+                        <i data-lucide="facebook"></i>
+                        Facebook
+                    </label>
+                    <input type="text" 
+                           id="facebook" 
+                           name="facebook" 
+                           class="form-input" 
+                           value="{{ configuracoes.facebook if configuracoes else '' }}"
+                           placeholder="facebook.com/barbearia">
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary btn-lg w-full">
+                    <i data-lucide="save"></i>
+                    Salvar Configurações
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Preview das Configurações -->
+    <div class="space-y-6">
+        <!-- Preview da Barbearia -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i data-lucide="eye"></i>
+                    Preview da Barbearia
+                </h3>
+            </div>
+
+            <div class="barbearia-preview">
+                <div class="barbearia-logo">
+                    <img src="{{ configuracoes.logo_url if configuracoes and configuracoes.logo_url else '/static/uploads/logo-barbearia.jpg' }}" 
+                         alt="Logo da barbearia" 
+                         class="logo-img"
+                         id="logoPreview">
+                    <div class="logo-overlay">
+                        <i data-lucide="camera"></i>
+                    </div>
+                </div>
+
+                <div class="barbearia-info">
+                    <h4 class="barbearia-name">{{ configuracoes.nome_barbearia if configuracoes else 'Barbearia Premium' }}</h4>
+                    <p class="barbearia-description">{{ configuracoes.descricao if configuracoes else 'A melhor barbearia da cidade' }}</p>
+                </div>
+            </div>
+
+            <div class="barbearia-details">
+                <div class="detail-item">
+                    <i data-lucide="map-pin"></i>
+                    <div>
+                        <span class="detail-label">Endereço</span>
+                        <span class="detail-value">{{ configuracoes.endereco if configuracoes and configuracoes.endereco else 'Não informado' }}</span>
+                    </div>
+                </div>
+
+                <div class="detail-item">
+                    <i data-lucide="phone"></i>
+                    <div>
+                        <span class="detail-label">Telefone</span>
+                        <span class="detail-value">{{ configuracoes.telefone_contato if configuracoes and configuracoes.telefone_contato else 'Não informado' }}</span>
+                    </div>
+                </div>
+
+                <div class="detail-item">
+                    <i data-lucide="message-circle"></i>
+                    <div>
+                        <span class="detail-label">WhatsApp</span>
+                        <span class="detail-value">{{ configuracoes.whatsapp_contato if configuracoes and configuracoes.whatsapp_contato else 'Não informado' }}</span>
+                    </div>
+                </div>
+
+                <div class="detail-item">
+                    <i data-lucide="clock"></i>
+                    <div>
+                        <span class="detail-label">Funcionamento</span>
+                        <span class="detail-value">
+                            {{ configuracoes.horario_funcionamento if configuracoes and configuracoes.horario_funcionamento else '08:00-18:00' }}
+                            <br>
+                            <small>{{ configuracoes.dias_funcionamento if configuracoes and configuracoes.dias_funcionamento else 'Segunda a Sábado' }}</small>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Redes Sociais -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i data-lucide="share-2"></i>
+                    Redes Sociais
+                </h3>
+            </div>
+
+            <div class="social-links">
+                {% if configuracoes and configuracoes.instagram %}
+                <a href="https://instagram.com/{{ configuracoes.instagram.replace('@', '') }}" 
+                   target="_blank" 
+                   class="social-link instagram">
+                    <div class="social-icon">
+                        <i data-lucide="instagram"></i>
+                    </div>
+                    <div class="social-info">
+                        <span class="social-name">Instagram</span>
+                        <span class="social-handle">{{ configuracoes.instagram }}</span>
+                    </div>
+                </a>
+                {% endif %}
+
+                {% if configuracoes and configuracoes.facebook %}
+                <a href="{{ configuracoes.facebook if configuracoes.facebook.startswith('http') else 'https://facebook.com/' + configuracoes.facebook }}" 
+                   target="_blank" 
+                   class="social-link facebook">
+                    <div class="social-icon">
+                        <i data-lucide="facebook"></i>
+                    </div>
+                    <div class="social-info">
+                        <span class="social-name">Facebook</span>
+                        <span class="social-handle">{{ configuracoes.facebook }}</span>
+                    </div>
+                </a>
+                {% endif %}
+
+                {% if not (configuracoes and (configuracoes.instagram or configuracoes.facebook)) %}
+                <div class="no-social">
+                    <i data-lucide="share-2" class="no-social-icon"></i>
+                    <p>Nenhuma rede social configurada</p>
+                    <small>Configure suas redes sociais no formulário ao lado</small>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Informações do Sistema -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i data-lucide="info"></i>
+                    Informações do Sistema
+                </h3>
+            </div>
+
+            <div class="system-info">
+                <div class="info-item">
+                    <i data-lucide="code"></i>
+                    <div>
+                        <span class="info-label">Desenvolvido por</span>
+                        <span class="info-value">João Layon</span>
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <i data-lucide="calendar"></i>
+                    <div>
+                        <span class="info-label">Versão</span>
+                        <span class="info-value">2025.1.0</span>
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <i data-lucide="server"></i>
+                    <div>
+                        <span class="info-label">Tecnologia</span>
+                        <span class="info-value">Python Flask + SQLite</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.space-y-6 > * + * {
+    margin-top: var(--spacing-xl);
+}
+
+.barbearia-preview {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-lg);
+    padding: var(--spacing-lg);
+    background-color: var(--bg-tertiary);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
+    margin-bottom: var(--spacing-lg);
+}
+
+.barbearia-logo {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    border: 3px solid var(--primary-color);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.barbearia-logo:hover {
+    border-color: var(--primary-light);
+}
+
+.barbearia-logo:hover .logo-overlay {
+    opacity: 1;
+}
+
+.logo-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.logo-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+}
+
+.logo-overlay i {
+    width: 24px;
+    height: 24px;
+    color: white;
+}
+
+.barbearia-info {
+    flex: 1;
+}
+
+.barbearia-name {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-xs);
+}
+
+.barbearia-description {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}
+
+.barbearia-details {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+    background-color: var(--bg-tertiary);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+}
+
+.detail-item i {
+    width: 20px;
+    height: 20px;
+    color: var(--primary-light);
+    flex-shrink: 0;
+}
+
+.detail-item div {
+    flex: 1;
+}
+
+.detail-label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: var(--spacing-xs);
+}
+
+.detail-value {
+    display: block;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.detail-value small {
+    color: var(--text-muted);
+    font-weight: 400;
+}
+
+.social-links {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.social-link {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-lg);
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    text-decoration: none;
+    color: var(--text-primary);
+    transition: all var(--transition-fast);
+}
+
+.social-link:hover {
+    background-color: var(--bg-hover);
+    border-color: var(--border-light);
+    transform: translateY(-2px);
+}
+
+.social-link.instagram:hover {
+    border-color: #E4405F;
+}
+
+.social-link.facebook:hover {
+    border-color: #1877F2;
+}
+
+.social-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.social-link.instagram .social-icon {
+    background: linear-gradient(135deg, #E4405F, #F56040);
+    color: white;
+}
+
+.social-link.facebook .social-icon {
+    background: linear-gradient(135deg, #1877F2, #42A5F5);
+    color: white;
+}
+
+.social-info {
+    flex: 1;
+}
+
+.social-name {
+    display: block;
+    font-weight: 600;
+    margin-bottom: var(--spacing-xs);
+}
+
+.social-handle {
+    display: block;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+.no-social {
+    text-align: center;
+    padding: var(--spacing-xl);
+    color: var(--text-muted);
+}
+
+.no-social-icon {
+    width: 48px;
+    height: 48px;
+    margin: 0 auto var(--spacing-md);
+}
+
+.no-social p {
+    font-weight: 500;
+    margin-bottom: var(--spacing-xs);
+}
+
+.no-social small {
+    font-size: 0.75rem;
+}
+
+.system-info {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+    background-color: var(--bg-tertiary);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+}
+
+.info-item i {
+    width: 20px;
+    height: 20px;
+    color: var(--primary-light);
+    flex-shrink: 0;
+}
+
+.info-item div {
+    flex: 1;
+}
+
+.info-label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: var(--spacing-xs);
+}
+
+.info-value {
+    display: block;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.form-help {
+    display: block;
+    margin-top: var(--spacing-xs);
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.form-actions {
+    margin-top: var(--spacing-xl);
+}
+
+@media (max-width: 768px) {
+    .grid-cols-2 {
+        grid-template-columns: 1fr;
+    }
+    
+    .barbearia-preview {
+        flex-direction: column;
+        text-align: center;
+        gap: var(--spacing-md);
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const fileInput = document.getElementById('logo_barbearia');
+    const logoPreview = document.getElementById('logoPreview');
+    const barbeariaLogo = document.querySelector('.barbearia-logo');
+
+    // Preview da imagem selecionada
+    fileInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                logoPreview.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Clique no logo para abrir seletor de arquivo
+    barbeariaLogo.addEventListener('click', function() {
+        fileInput.click();
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,470 @@
+{% extends "base.html" %}
+
+{% block title %}Pagamento PIX{% endblock %}
+{% block page_title %}Pagamento PIX{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-2 gap-6">
+    <!-- Informações do Agendamento -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i data-lucide="calendar-check"></i>
+                Detalhes do Agendamento
+            </h3>
+            <p class="card-subtitle">Confirme os dados do seu agendamento</p>
+        </div>
+
+        <div class="agendamento-details">
+            <div class="detail-item">
+                <i data-lucide="user"></i>
+                <div>
+                    <span class="detail-label">Funcionário</span>
+                    <span class="detail-value">{{ agendamento[6] }}</span>
+                </div>
+            </div>
+
+            <div class="detail-item">
+                <i data-lucide="scissors"></i>
+                <div>
+                    <span class="detail-label">Serviço</span>
+                    <span class="detail-value">{{ agendamento[7] }}</span>
+                </div>
+            </div>
+
+            <div class="detail-item">
+                <i data-lucide="calendar"></i>
+                <div>
+                    <span class="detail-label">Data e Horário</span>
+                    <span class="detail-value">{{ agendamento[8] }}</span>
+                </div>
+            </div>
+
+            <div class="detail-item total">
+                <i data-lucide="dollar-sign"></i>
+                <div>
+                    <span class="detail-label">Valor Total</span>
+                    <span class="detail-value">R$ {{ "%.2f"|format(agendamento[10]) }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="payment-status">
+            <div class="status-icon warning">
+                <i data-lucide="clock"></i>
+            </div>
+            <div class="status-content">
+                <h4>Aguardando Pagamento</h4>
+                <p>Seu agendamento será confirmado após o pagamento via PIX</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Instruções de Pagamento PIX -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i data-lucide="smartphone"></i>
+                Pagamento via PIX
+            </h3>
+            <p class="card-subtitle">Siga as instruções para realizar o pagamento</p>
+        </div>
+
+        <div class="pix-instructions">
+            <div class="pix-step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h4>Abra seu app bancário</h4>
+                    <p>Acesse a função PIX no seu banco ou carteira digital</p>
+                </div>
+            </div>
+
+            <div class="pix-step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h4>Escolha "PIX Copia e Cola"</h4>
+                    <p>Selecione a opção de pagamento via chave PIX</p>
+                </div>
+            </div>
+
+            <div class="pix-step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h4>Use nossa chave PIX</h4>
+                    <div class="pix-key">
+                        <span class="key-value">{{ chave_pix }}</span>
+                        <button class="btn btn-secondary btn-sm copy-btn" onclick="copyPixKey()">
+                            <i data-lucide="copy"></i>
+                            Copiar
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pix-step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <h4>Confirme o valor</h4>
+                    <p>Verifique se o valor é <strong>R$ {{ "%.2f"|format(agendamento[10]) }}</strong></p>
+                </div>
+            </div>
+
+            <div class="pix-step">
+                <div class="step-number">5</div>
+                <div class="step-content">
+                    <h4>Finalize o pagamento</h4>
+                    <p>Após o pagamento, clique no botão abaixo para confirmar</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="payment-actions">
+            <a href="{{ url_for('confirmar_pagamento', agendamento_id=agendamento[0]) }}" 
+               class="btn btn-success btn-lg w-full">
+                <i data-lucide="check-circle"></i>
+                Já fiz o pagamento
+            </a>
+            
+            <a href="{{ url_for('dashboard_cliente') }}" 
+               class="btn btn-secondary w-full mt-3">
+                <i data-lucide="arrow-left"></i>
+                Voltar aos agendamentos
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- QR Code (se disponível) -->
+<div class="card mt-6">
+    <div class="card-header">
+        <h3 class="card-title">
+            <i data-lucide="qr-code"></i>
+            Pagamento Rápido
+        </h3>
+        <p class="card-subtitle">Escaneie o QR Code ou use a chave PIX</p>
+    </div>
+
+    <div class="qr-section">
+        <div class="qr-placeholder">
+            <i data-lucide="qr-code"></i>
+            <p>QR Code PIX</p>
+            <small>Escaneie com seu app bancário</small>
+        </div>
+
+        <div class="qr-info">
+            <h4>Informações do PIX</h4>
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">Beneficiário:</span>
+                    <span class="info-value">{{ configuracoes_barbearia.nome_barbearia if configuracoes_barbearia else 'Barbearia Premium' }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Chave PIX:</span>
+                    <span class="info-value">{{ chave_pix }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Valor:</span>
+                    <span class="info-value">R$ {{ "%.2f"|format(agendamento[10]) }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Agendamento:</span>
+                    <span class="info-value">#{{ agendamento[0] }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.agendamento-details {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-xl);
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+    background-color: var(--bg-tertiary);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+}
+
+.detail-item.total {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+    color: white;
+    border-color: var(--primary-light);
+}
+
+.detail-item i {
+    width: 20px;
+    height: 20px;
+    color: var(--primary-light);
+    flex-shrink: 0;
+}
+
+.detail-item.total i {
+    color: white;
+}
+
+.detail-item div {
+    flex: 1;
+}
+
+.detail-label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: var(--spacing-xs);
+}
+
+.detail-item.total .detail-label {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.detail-value {
+    display: block;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.detail-item.total .detail-value {
+    color: white;
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.payment-status {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-lg);
+    background-color: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.2);
+    border-radius: var(--radius-lg);
+}
+
+.status-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.status-icon.warning {
+    background: linear-gradient(135deg, var(--warning), var(--warning-light));
+    color: white;
+}
+
+.status-content h4 {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-xs);
+}
+
+.status-content p {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}
+
+.pix-instructions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-xl);
+}
+
+.pix-step {
+    display: flex;
+    gap: var(--spacing-md);
+    padding: var(--spacing-lg);
+    background-color: var(--bg-tertiary);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
+}
+
+.step-number {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.step-content {
+    flex: 1;
+}
+
+.step-content h4 {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-xs);
+}
+
+.step-content p {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}
+
+.pix-key {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    margin-top: var(--spacing-sm);
+}
+
+.key-value {
+    flex: 1;
+    font-family: 'Courier New', monospace;
+    font-weight: 600;
+    color: var(--text-primary);
+    background-color: var(--bg-primary);
+    padding: var(--spacing-sm);
+    border-radius: var(--radius-sm);
+}
+
+.copy-btn {
+    flex-shrink: 0;
+}
+
+.payment-actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.qr-section {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--spacing-2xl);
+    align-items: center;
+}
+
+.qr-placeholder {
+    width: 200px;
+    height: 200px;
+    background-color: var(--bg-tertiary);
+    border: 2px dashed var(--border-color);
+    border-radius: var(--radius-lg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    color: var(--text-muted);
+}
+
+.qr-placeholder i {
+    width: 64px;
+    height: 64px;
+}
+
+.qr-placeholder p {
+    font-weight: 600;
+    margin: 0;
+}
+
+.qr-placeholder small {
+    font-size: 0.75rem;
+}
+
+.qr-info h4 {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-lg);
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--spacing-md);
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-md);
+    background-color: var(--bg-tertiary);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+}
+
+.info-label {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+.info-value {
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+@media (max-width: 768px) {
+    .grid-cols-2 {
+        grid-template-columns: 1fr;
+    }
+    
+    .qr-section {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+    
+    .qr-placeholder {
+        margin: 0 auto;
+    }
+    
+    .pix-key {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .copy-btn {
+        align-self: center;
+    }
+}
+</style>
+
+<script>
+function copyPixKey() {
+    const pixKey = '{{ chave_pix }}';
+    navigator.clipboard.writeText(pixKey).then(function() {
+        // Feedback visual
+        const btn = document.querySelector('.copy-btn');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i data-lucide="check"></i> Copiado!';
+        btn.classList.add('btn-success');
+        btn.classList.remove('btn-secondary');
+        
+        setTimeout(() => {
+            btn.innerHTML = originalText;
+            btn.classList.remove('btn-success');
+            btn.classList.add('btn-secondary');
+            lucide.createIcons();
+        }, 2000);
+        
+        lucide.createIcons();
+    }).catch(function(err) {
+        console.error('Erro ao copiar: ', err);
+        alert('Erro ao copiar a chave PIX. Tente novamente.');
+    });
+}
+</script>
+{% endblock %}

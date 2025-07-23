@@ -1,0 +1,409 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard Administrativo{% endblock %}
+{% block page_title %}Dashboard Administrativo{% endblock %}
+
+{% block content %}
+<!-- Estatísticas Principais -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon primary">
+            <i data-lucide="dollar-sign"></i>
+        </div>
+        <div class="stat-content">
+            <div class="stat-value">R$ {{ "%.2f"|format(estatisticas.faturamento_mensal) }}</div>
+            <div class="stat-label">Faturamento Mensal</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon success">
+            <i data-lucide="trending-up"></i>
+        </div>
+        <div class="stat-content">
+            <div class="stat-value">R$ {{ "%.2f"|format(estatisticas.faturamento_semanal) }}</div>
+            <div class="stat-label">Faturamento Semanal</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon warning">
+            <i data-lucide="calendar"></i>
+        </div>
+        <div class="stat-content">
+            <div class="stat-value">R$ {{ "%.2f"|format(estatisticas.faturamento_diario) }}</div>
+            <div class="stat-label">Faturamento Hoje</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon primary">
+            <i data-lucide="users"></i>
+        </div>
+        <div class="stat-content">
+            <div class="stat-value">{{ estatisticas.total_clientes }}</div>
+            <div class="stat-label">Total de Clientes</div>
+        </div>
+    </div>
+</div>
+
+<!-- Estatísticas de Agendamentos -->
+<div class="grid grid-cols-4 mb-6">
+    <div class="card">
+        <div class="flex items-center gap-3">
+            <div class="stat-icon warning">
+                <i data-lucide="clock"></i>
+            </div>
+            <div>
+                <div class="stat-value">{{ estatisticas.aguardando }}</div>
+                <div class="stat-label">Aguardando Confirmação</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="flex items-center gap-3">
+            <div class="stat-icon success">
+                <i data-lucide="check-circle"></i>
+            </div>
+            <div>
+                <div class="stat-value">{{ estatisticas.confirmados }}</div>
+                <div class="stat-label">Confirmados</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="flex items-center gap-3">
+            <div class="stat-icon primary">
+                <i data-lucide="check-circle-2"></i>
+            </div>
+            <div>
+                <div class="stat-value">{{ estatisticas.concluidos }}</div>
+                <div class="stat-label">Concluídos</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="flex items-center gap-3">
+            <div class="stat-icon error">
+                <i data-lucide="x-circle"></i>
+            </div>
+            <div>
+                <div class="stat-value">{{ estatisticas.cancelados }}</div>
+                <div class="stat-label">Cancelados</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-cols-2 gap-6">
+    <!-- Agendamentos Pendentes -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i data-lucide="clock"></i>
+                Agendamentos Pendentes
+            </h3>
+            <p class="card-subtitle">Aguardando confirmação de pagamento</p>
+        </div>
+
+        {% if agendamentos_pendentes %}
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Cliente</th>
+                        <th>Funcionário</th>
+                        <th>Data/Hora</th>
+                        <th>Valor</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for agendamento in agendamentos_pendentes %}
+                    <tr>
+                        <td>
+                            <div>
+                                <div class="font-medium">{{ agendamento[1] }}</div>
+                                <div class="text-sm text-muted">{{ agendamento[2] }}</div>
+                            </div>
+                        </td>
+                        <td>{{ agendamento[4] }}</td>
+                        <td class="date-display">{{ agendamento[6] }}</td>
+                        <td>
+                            <span class="badge badge-success">
+                                R$ {{ "%.2f"|format(agendamento[8]) }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="{{ url_for('confirmar_agendamento', agendamento_id=agendamento[0]) }}" 
+                                   class="btn btn-success btn-sm">
+                                    <i data-lucide="check"></i>
+                                    Confirmar
+                                </a>
+                                <a href="{{ url_for('cancelar_agendamento', agendamento_id=agendamento[0]) }}" 
+                                   class="btn btn-danger btn-sm">
+                                    <i data-lucide="x"></i>
+                                    Cancelar
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i data-lucide="check-circle" class="empty-icon"></i>
+            <h3>Nenhum agendamento pendente</h3>
+            <p>Todos os agendamentos estão confirmados ou não há novos agendamentos</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Performance dos Funcionários -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i data-lucide="trending-up"></i>
+                Performance dos Funcionários
+            </h3>
+            <p class="card-subtitle">Cortes realizados este mês</p>
+        </div>
+
+        {% if estatisticas.cortes_por_funcionario %}
+        <div class="space-y-4">
+            {% for funcionario in estatisticas.cortes_por_funcionario %}
+            <div class="performance-item">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="font-medium">{{ funcionario[0] }}</span>
+                    <div class="flex gap-4 text-sm">
+                        <span class="text-muted">{{ funcionario[1] }} cortes</span>
+                        <span class="text-success">R$ {{ "%.2f"|format(funcionario[5]) }}</span>
+                    </div>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: {{ (funcionario[1] / (estatisticas.cortes_por_funcionario[0][1] if estatisticas.cortes_por_funcionario[0][1] > 0 else 1) * 100) }}%"></div>
+                </div>
+                <div class="flex justify-between text-xs text-muted mt-1">
+                    <span>Faturamento: R$ {{ "%.2f"|format(funcionario[2]) }}</span>
+                    <span>
+                        {% if funcionario[4] == 'porcentagem' %}
+                            {{ funcionario[3] }}% por corte
+                        {% else %}
+                            R$ {{ "%.2f"|format(funcionario[3]) }} fixo
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i data-lucide="users" class="empty-icon"></i>
+            <h3>Nenhum dado de performance</h3>
+            <p>Os dados de performance aparecerão quando houver agendamentos concluídos</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Ações Rápidas -->
+<div class="card mt-6">
+    <div class="card-header">
+        <h3 class="card-title">
+            <i data-lucide="zap"></i>
+            Ações Rápidas
+        </h3>
+        <p class="card-subtitle">Acesso rápido às principais funcionalidades</p>
+    </div>
+
+    <div class="grid grid-cols-4 gap-4">
+        <a href="{{ url_for('gerenciar_funcionarios') }}" class="quick-action">
+            <div class="quick-action-icon primary">
+                <i data-lucide="users"></i>
+            </div>
+            <div class="quick-action-content">
+                <h4>Funcionários</h4>
+                <p>Gerenciar equipe</p>
+            </div>
+        </a>
+
+        <a href="{{ url_for('listar_clientes') }}" class="quick-action">
+            <div class="quick-action-icon success">
+                <i data-lucide="user-check"></i>
+            </div>
+            <div class="quick-action-content">
+                <h4>Clientes</h4>
+                <p>Visualizar clientes</p>
+            </div>
+        </a>
+
+        <a href="{{ url_for('configuracoes_barbearia') }}" class="quick-action">
+            <div class="quick-action-icon warning">
+                <i data-lucide="settings"></i>
+            </div>
+            <div class="quick-action-content">
+                <h4>Configurações</h4>
+                <p>Ajustar sistema</p>
+            </div>
+        </a>
+
+        <a href="{{ url_for('perfil') }}" class="quick-action">
+            <div class="quick-action-icon info">
+                <i data-lucide="user"></i>
+            </div>
+            <div class="quick-action-content">
+                <h4>Meu Perfil</h4>
+                <p>Editar dados</p>
+            </div>
+        </a>
+    </div>
+</div>
+
+<style>
+.action-buttons {
+    display: flex;
+    gap: var(--spacing-sm);
+    flex-wrap: wrap;
+}
+
+.empty-state {
+    text-align: center;
+    padding: var(--spacing-2xl);
+}
+
+.empty-icon {
+    width: 64px;
+    height: 64px;
+    color: var(--text-muted);
+    margin: 0 auto var(--spacing-lg);
+}
+
+.empty-state h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-sm);
+}
+
+.empty-state p {
+    color: var(--text-muted);
+}
+
+.performance-item {
+    padding: var(--spacing-md);
+    background-color: var(--bg-tertiary);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background-color: var(--bg-primary);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-color), var(--primary-light));
+    border-radius: var(--radius-md);
+    transition: width var(--transition-normal);
+}
+
+.quick-action {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-lg);
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    text-decoration: none;
+    color: var(--text-primary);
+    transition: all var(--transition-fast);
+}
+
+.quick-action:hover {
+    background-color: var(--bg-hover);
+    border-color: var(--border-light);
+    transform: translateY(-2px);
+}
+
+.quick-action-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.quick-action-content h4 {
+    font-weight: 600;
+    margin-bottom: var(--spacing-xs);
+}
+
+.quick-action-content p {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+.space-y-4 > * + * {
+    margin-top: var(--spacing-lg);
+}
+
+.font-medium {
+    font-weight: 500;
+}
+
+.text-sm {
+    font-size: 0.875rem;
+}
+
+.text-xs {
+    font-size: 0.75rem;
+}
+
+@media (max-width: 768px) {
+    .grid-cols-4 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .quick-action {
+        flex-direction: column;
+        text-align: center;
+        gap: var(--spacing-sm);
+    }
+    
+    .quick-action-icon {
+        width: 40px;
+        height: 40px;
+    }
+}
+
+@media (max-width: 480px) {
+    .grid-cols-4,
+    .grid-cols-2 {
+        grid-template-columns: 1fr;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+        gap: var(--spacing-xs);
+    }
+    
+    .action-buttons .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+</style>
+{% endblock %}

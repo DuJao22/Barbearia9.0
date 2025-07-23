@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ configuracoes_barbearia.nome_barbearia if configuracoes_barbearia else 'Barbearia Premium' }}{% endblock %}</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{{ configuracoes_barbearia.logo_url if configuracoes_barbearia else '/static/uploads/logo-barbearia.jpg' }}">
+    
+    <!-- CSS Principal -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
+    <!-- Fontes Google -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Ícones Lucide -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+    {% if session.usuario_id %}
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-container">
+                <img src="{{ configuracoes_barbearia.logo_url if configuracoes_barbearia else '/static/uploads/logo-barbearia.jpg' }}" 
+                     alt="Logo" class="logo-img">
+                <h2 class="logo-text">{{ configuracoes_barbearia.nome_barbearia if configuracoes_barbearia else 'Barbearia Premium' }}</h2>
+            </div>
+            <button class="sidebar-toggle" id="sidebarToggle">
+                <i data-lucide="x"></i>
+            </button>
+        </div>
+        
+        <nav class="sidebar-nav">
+            {% if session.tipo_usuario == 'admin' %}
+                <a href="{{ url_for('dashboard_admin') }}" class="nav-item {% if request.endpoint == 'dashboard_admin' %}active{% endif %}">
+                    <i data-lucide="layout-dashboard"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="{{ url_for('gerenciar_funcionarios') }}" class="nav-item {% if request.endpoint == 'gerenciar_funcionarios' %}active{% endif %}">
+                    <i data-lucide="users"></i>
+                    <span>Funcionários</span>
+                </a>
+                <a href="{{ url_for('listar_clientes') }}" class="nav-item {% if request.endpoint == 'listar_clientes' %}active{% endif %}">
+                    <i data-lucide="user-check"></i>
+                    <span>Clientes</span>
+                </a>
+                <a href="{{ url_for('configuracoes_barbearia') }}" class="nav-item {% if request.endpoint == 'configuracoes_barbearia' %}active{% endif %}">
+                    <i data-lucide="settings"></i>
+                    <span>Configurações</span>
+                </a>
+            {% elif session.tipo_usuario == 'funcionario' %}
+                <a href="{{ url_for('dashboard_funcionario') }}" class="nav-item {% if request.endpoint == 'dashboard_funcionario' %}active{% endif %}">
+                    <i data-lucide="layout-dashboard"></i>
+                    <span>Minha Agenda</span>
+                </a>
+            {% else %}
+                <a href="{{ url_for('dashboard_cliente') }}" class="nav-item {% if request.endpoint == 'dashboard_cliente' %}active{% endif %}">
+                    <i data-lucide="layout-dashboard"></i>
+                    <span>Meus Agendamentos</span>
+                </a>
+                <a href="{{ url_for('agendamento') }}" class="nav-item {% if request.endpoint == 'agendamento' %}active{% endif %}">
+                    <i data-lucide="calendar-plus"></i>
+                    <span>Novo Agendamento</span>
+                </a>
+            {% endif %}
+            
+            <a href="{{ url_for('perfil') }}" class="nav-item {% if request.endpoint == 'perfil' %}active{% endif %}">
+                <i data-lucide="user"></i>
+                <span>Meu Perfil</span>
+            </a>
+        </nav>
+        
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <img src="{{ session.foto_perfil or '/static/uploads/default-user.jpg' }}" 
+                     alt="Foto do usuário" class="user-avatar">
+                <div class="user-details">
+                    <span class="user-name">{{ session.nome_usuario }}</span>
+                    <span class="user-role">{{ session.tipo_usuario.title() }}</span>
+                </div>
+            </div>
+            <a href="{{ url_for('logout') }}" class="logout-btn">
+                <i data-lucide="log-out"></i>
+                <span>Sair</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Overlay para mobile -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Conteúdo Principal -->
+    <main class="main-content">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <button class="mobile-menu-btn" id="mobileMenuBtn">
+                    <i data-lucide="menu"></i>
+                </button>
+                <h1 class="page-title">{% block page_title %}Dashboard{% endblock %}</h1>
+            </div>
+            
+            <div class="header-right">
+                <div class="user-menu">
+                    <img src="{{ session.foto_perfil or '/static/uploads/default-user.jpg' }}" 
+                         alt="Foto do usuário" class="user-avatar-small">
+                    <span class="user-name-header">{{ session.nome_usuario }}</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Mensagens Flash -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash-message flash-{{ category }}">
+                            <div class="flash-content">
+                                <i data-lucide="{% if category == 'sucesso' %}check-circle{% elif category == 'erro' %}x-circle{% else %}info{% endif %}"></i>
+                                <span>{{ message }}</span>
+                            </div>
+                            <button class="flash-close" onclick="this.parentElement.remove()">
+                                <i data-lucide="x"></i>
+                            </button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <!-- Conteúdo da Página -->
+        <div class="page-content">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+    {% else %}
+    <!-- Layout para páginas sem login -->
+    <div class="auth-layout">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash-message flash-{{ category }}">
+                            <div class="flash-content">
+                                <i data-lucide="{% if category == 'sucesso' %}check-circle{% elif category == 'erro' %}x-circle{% else %}info{% endif %}"></i>
+                                <span>{{ message }}</span>
+                            </div>
+                            <button class="flash-close" onclick="this.parentElement.remove()">
+                                <i data-lucide="x"></i>
+                            </button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        
+        {% block auth_content %}{% endblock %}
+    </div>
+    {% endif %}
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2025 Sistema desenvolvido por <strong>João Layon</strong>. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        // Inicializar ícones Lucide
+        lucide.createIcons();
+
+        // Toggle sidebar mobile
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+
+        if (mobileMenuBtn) {
+            mobileMenuBtn.addEventListener('click', () => {
+                sidebar.classList.add('active');
+                sidebarOverlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            });
+        }
+
+        if (sidebarToggle) {
+            sidebarToggle.addEventListener('click', () => {
+                sidebar.classList.remove('active');
+                sidebarOverlay.classList.remove('active');
+                document.body.style.overflow = '';
+            });
+        }
+
+        if (sidebarOverlay) {
+            sidebarOverlay.addEventListener('click', () => {
+                sidebar.classList.remove('active');
+                sidebarOverlay.classList.remove('active');
+                document.body.style.overflow = '';
+            });
+        }
+
+        // Auto-hide flash messages
+        setTimeout(() => {
+            const flashMessages = document.querySelectorAll('.flash-message');
+            flashMessages.forEach(msg => {
+                msg.style.opacity = '0';
+                msg.style.transform = 'translateX(100%)';
+                setTimeout(() => msg.remove(), 300);
+            });
+        }, 5000);
+        
+        // Função global para toggle de modais
+        window.toggleModal = function(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.toggle('active');
+                
+                if (modal.classList.contains('active')) {
+                    document.body.style.overflow = 'hidden';
+                } else {
+                    document.body.style.overflow = '';
+                }
+            }
+        };
+        
+        // Fechar modal com ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const activeModal = document.querySelector('.modal.active');
+                if (activeModal) {
+                    activeModal.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            }
+        });
+        
+        // Formatação de datas brasileiras
+        window.formatarData = function(data) {
+            if (!data) return '';
+            const date = new Date(data);
+            return date.toLocaleDateString('pt-BR');
+        };
+        
+        window.formatarDataHora = function(dataHora) {
+            if (!dataHora) return '';
+            const date = new Date(dataHora);
+            return date.toLocaleString('pt-BR');
+        };
+        
+        // Formatação de valores monetários
+        window.formatarMoeda = function(valor) {
+            return new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+            }).format(valor);
+        };
+        
+        // Máscara para telefone
+        window.aplicarMascaraTelefone = function(input) {
+            input.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length <= 11) {
+                    if (value.length <= 10) {
+                        value = value.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
+                    } else {
+                        value = value.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+                    }
+                }
+                e.target.value = value;
+            });
+        };
+        
+        // Aplicar máscaras automaticamente
+        document.addEventListener('DOMContentLoaded', function() {
+            // Máscara para telefones
+            const telefoneInputs = document.querySelectorAll('input[type="tel"]');
+            telefoneInputs.forEach(input => {
+                aplicarMascaraTelefone(input);
+            });
+            
+            // Recriar ícones após mudanças no DOM
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.addedNodes.length > 0) {
+                        lucide.createIcons();
+                    }
+                });
+            });
+            
+            observer.observe(document.body, {
+                childList: true,
+                subtree: true
+            });
+        });
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

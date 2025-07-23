@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}Cadastro - {{ configuracoes_barbearia.nome_barbearia if configuracoes_barbearia else 'Barbearia Premium' }}{% endblock %}
+
+{% block body_class %}auth-page{% endblock %}
+
+{% block auth_content %}
+<div class="auth-card animate-fade-in">
+    <div class="auth-header">
+        <img src="{{ configuracoes_barbearia.logo_url if configuracoes_barbearia else '/static/uploads/logo-barbearia.jpg' }}" 
+             alt="Logo" class="auth-logo">
+        <h1 class="auth-title">Criar conta</h1>
+        <p class="auth-subtitle">Cadastre-se para agendar seus horários</p>
+    </div>
+
+    <form method="POST" class="auth-form">
+        <div class="form-group">
+            <label for="nome" class="form-label">
+                <i data-lucide="user"></i>
+                Nome completo
+            </label>
+            <input type="text" 
+                   id="nome" 
+                   name="nome" 
+                   class="form-input" 
+                   placeholder="Seu nome completo"
+                   required>
+        </div>
+
+        <div class="form-group">
+            <label for="email" class="form-label">
+                <i data-lucide="mail"></i>
+                E-mail
+            </label>
+            <input type="email" 
+                   id="email" 
+                   name="email" 
+                   class="form-input" 
+                   placeholder="seu@email.com"
+                   required>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+            <div class="form-group">
+                <label for="telefone" class="form-label">
+                    <i data-lucide="phone"></i>
+                    Telefone
+                </label>
+                <input type="tel" 
+                       id="telefone" 
+                       name="telefone" 
+                       class="form-input" 
+                       placeholder="(11) 99999-9999">
+            </div>
+
+            <div class="form-group">
+                <label for="whatsapp" class="form-label">
+                    <i data-lucide="message-circle"></i>
+                    WhatsApp
+                </label>
+                <input type="tel" 
+                       id="whatsapp" 
+                       name="whatsapp" 
+                       class="form-input" 
+                       placeholder="11999999999">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="senha" class="form-label">
+                <i data-lucide="lock"></i>
+                Senha
+            </label>
+            <input type="password" 
+                   id="senha" 
+                   name="senha" 
+                   class="form-input" 
+                   placeholder="••••••••"
+                   required>
+        </div>
+
+        <input type="hidden" name="tipo" value="cliente">
+
+        <button type="submit" class="btn btn-primary btn-lg w-full">
+            <i data-lucide="user-plus"></i>
+            Criar conta
+        </button>
+    </form>
+
+    <div class="auth-footer">
+        <p class="text-center mt-4">
+            <span class="text-muted">Já tem uma conta?</span>
+            <a href="{{ url_for('login') }}" class="text-primary">Faça login aqui</a>
+        </p>
+    </div>
+</div>
+
+<style>
+.auth-form {
+    margin-bottom: var(--spacing-lg);
+}
+
+.form-label {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-sm);
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.form-label i {
+    width: 16px;
+    height: 16px;
+}
+
+.auth-footer {
+    border-top: 1px solid var(--border-color);
+    padding-top: var(--spacing-lg);
+}
+
+.text-primary {
+    color: var(--primary-light);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color var(--transition-fast);
+}
+
+.text-primary:hover {
+    color: var(--primary-color);
+}
+
+.text-muted {
+    color: var(--text-muted);
+}
+
+@media (max-width: 768px) {
+    .grid-cols-2 {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}

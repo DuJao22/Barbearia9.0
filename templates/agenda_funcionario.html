@@ -1,0 +1,528 @@
+{% extends "base.html" %}
+
+{% block title %}Agenda do Funcionário{% endblock %}
+{% block page_title %}Agenda - {{ funcionario[1] if funcionario else 'Funcionário' }}{% endblock %}
+
+{% block content %}
+<!-- Informações do Funcionário -->
+<div class="card mb-6">
+    <div class="funcionario-header">
+        <div class="funcionario-info">
+            <img src="{{ funcionario[8] if funcionario and funcionario[8] else '/static/uploads/default-user.jpg' }}" 
+                 alt="Foto" 
+                 class="funcionario-avatar">
+            <div class="funcionario-details">
+                <h3 class="funcionario-name">{{ funcionario[1] if funcionario else 'Funcionário' }}</h3>
+                <p class="funcionario-email">{{ funcionario[2] if funcionario else 'email@exemplo.com' }}</p>
+                <div class="funcionario-badges">
+                    <span class="badge badge-success">
+                        <i data-lucide="scissors"></i>
+                        Funcionário
+                    </span>
+                    {% if funcionario and funcionario[6] == 'porcentagem' %}
+                        <span class="badge badge-info">{{ funcionario[5] }}% comissão</span>
+                    {% else %}
+                        <span class="badge badge-warning">R$ {{ "%.2f"|format(funcionario[5]) if funcionario else '0,00' }} fixo</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="funcionario-actions">
+            <a href="{{ url_for('editar_funcionario', funcionario_id=funcionario[0]) if funcionario else '#' }}" 
+               class="btn btn-secondary">
+                <i data-lucide="edit"></i>
+                Editar
+            </a>
+            <a href="{{ url_for('gerenciar_funcionarios') }}" class="btn btn-primary">
+                <i data-lucide="arrow-left"></i>
+                Voltar
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Filtros de Data -->
+<div class="card mb-6">
+    <div class="card-header">
+        <h3 class="card-title">
+            <i data-lucide="filter"></i>
+            Filtrar Agenda
+        </h3>
+    </div>
+    
+    <form method="GET" class="filter-form">
+        <div class="filter-inputs">
+            <div class="form-group">
+                <label for="data_inicio" class="form-label">Data Início</label>
+                <input type="date" 
+                       id="data_inicio" 
+                       name="data_inicio" 
+                       class="form-input"
+                       value="{{ data_inicio }}">
+            </div>
+            
+            <div class="form-group">
+                <label for="data_fim" class="form-label">Data Fim</label>
+                <input type="date" 
+                       id="data_fim" 
+                       name="data_fim" 
+                       class="form-input"
+                       value="{{ data_fim }}">
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i data-lucide="search"></i>
+                    Filtrar
+                </button>
+                <a href="{{ url_for('agenda_funcionario', funcionario_id=funcionario[0]) if funcionario else '#' }}" 
+                   class="btn btn-secondary">
+                    <i data-lucide="x"></i>
+                    Limpar
+                </a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Estatísticas do Período -->
+{% if faturamento %}
+<div class="stats-grid mb-6">
+    <div class="stat-card">
+        <div class="stat-icon primary">
+            <i data-lucide="scissors"></i>
+        </div>
+        <div class="stat-content">
+            <div class="stat-value">{{ faturamento[0] or 0 }}</div>
+            <div class="stat-label">Cortes no Período</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon success">
+            <i data-lucide="dollar-sign"></i>
+        </div>
+        <div class="stat-content">
+            <div class="stat-value">R$ {{ "%.2f"|format(faturamento[1] or 0) }}</div>
+            <div class="stat-label">Faturamento Total</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon warning">
+            <i data-lucide="trending-up"></i>
+        </div>
+        <div class="stat-content">
+            <div class="stat-value">R$ {{ "%.2f"|format(faturamento[4] or 0) }}</div>
+            <div class="stat-label">Ganhos do Funcionário</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon info">
+            <i data-lucide="percent"></i>
+        </div>
+        <div class="stat-content">
+            <div class="stat-value">
+                {% if faturamento and faturamento[0] > 0 %}
+                    R$ {{ "%.2f"|format(faturamento[1] / faturamento[0]) }}
+                {% else %}
+                    R$ 0,00
+                {% endif %}
+            </div>
+            <div class="stat-label">Ticket Médio</div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Agenda -->
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">
+            <i data-lucide="calendar"></i>
+            Agenda do Funcionário
+        </h3>
+        <p class="card-subtitle">
+            {% if data_inicio == data_fim %}
+                Agendamentos do dia {{ data_inicio }}
+            {% else %}
+                Agendamentos de {{ data_inicio }} até {{ data_fim }}
+            {% endif %}
+        </p>
+    </div>
+
+    {% if agenda %}
+    <div class="agenda-timeline">
+        {% set current_date = '' %}
+        {% for agendamento in agenda %}
+            {% if agendamento[8] != current_date %}
+                {% set current_date = agendamento[8] %}
+                <div class="date-separator">
+                    <div class="date-line"></div>
+                    <div class="date-label">
+                        {{ agendamento[8] }}
+                    </div>
+                    <div class="date-line"></div>
+                </div>
+            {% endif %}
+            
+            <div class="agenda-item status-{{ agendamento[6] }}">
+                <div class="agenda-time">
+                    <span class="time">{{ agendamento[9] }}</span>
+                </div>
+                
+                <div class="agenda-content">
+                    <div class="agenda-header">
+                        <h4 class="cliente-nome">{{ agendamento[1] }}</h4>
+                        <span class="badge badge-{{ 'success' if agendamento[6] == 'confirmado' else 'warning' if agendamento[6] == 'aguardando_confirmacao' else 'error' if agendamento[6] == 'cancelado' else 'info' if agendamento[6] == 'concluido' else 'secondary' }}">
+                            {% if agendamento[6] == 'confirmado' %}
+                                <i data-lucide="check-circle"></i>
+                                Confirmado
+                            {% elif agendamento[6] == 'aguardando_confirmacao' %}
+                                <i data-lucide="clock"></i>
+                                Aguardando
+                            {% elif agendamento[6] == 'cancelado' %}
+                                <i data-lucide="x-circle"></i>
+                                Cancelado
+                            {% elif agendamento[6] == 'concluido' %}
+                                <i data-lucide="check-circle-2"></i>
+                                Concluído
+                            {% else %}
+                                <i data-lucide="clock"></i>
+                                Pendente
+                            {% endif %}
+                        </span>
+                    </div>
+
+                    <div class="agenda-details">
+                        <div class="detail-row">
+                            <div class="detail-item">
+                                <i data-lucide="scissors"></i>
+                                <span>{{ agendamento[4] }}</span>
+                            </div>
+                            <div class="detail-item">
+                                <i data-lucide="dollar-sign"></i>
+                                <span>R$ {{ "%.2f"|format(agendamento[7]) }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="detail-row">
+                            <div class="detail-item">
+                                <i data-lucide="phone"></i>
+                                <span>{{ agendamento[2] or 'Não informado' }}</span>
+                            </div>
+                            <div class="detail-item">
+                                <i data-lucide="message-circle"></i>
+                                <span>{{ agendamento[3] or 'Não informado' }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if agendamento[6] == 'confirmado' %}
+                    <div class="agenda-actions">
+                        <a href="{{ url_for('concluir_atendimento', agendamento_id=agendamento[0]) }}" 
+                           class="btn btn-success btn-sm">
+                            <i data-lucide="check"></i>
+                            Concluir
+                        </a>
+                    </div>
+                    {% elif agendamento[6] == 'aguardando_confirmacao' %}
+                    <div class="agenda-actions">
+                        <a href="{{ url_for('confirmar_agendamento', agendamento_id=agendamento[0]) }}" 
+                           class="btn btn-success btn-sm">
+                            <i data-lucide="check"></i>
+                            Confirmar
+                        </a>
+                        <a href="{{ url_for('cancelar_agendamento', agendamento_id=agendamento[0]) }}" 
+                           class="btn btn-danger btn-sm">
+                            <i data-lucide="x"></i>
+                            Cancelar
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i data-lucide="calendar-x" class="empty-icon"></i>
+        <h3>Nenhum agendamento encontrado</h3>
+        <p>
+            {% if data_inicio == data_fim %}
+                Não há agendamentos para o dia selecionado.
+            {% else %}
+                Não há agendamentos no período selecionado.
+            {% endif %}
+        </p>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.funcionario-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-xl);
+    background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-card) 100%);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
+}
+
+.funcionario-info {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-lg);
+}
+
+.funcionario-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--primary-color);
+}
+
+.funcionario-details {
+    flex: 1;
+}
+
+.funcionario-name {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-xs);
+}
+
+.funcionario-email {
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-sm);
+}
+
+.funcionario-badges {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.funcionario-actions {
+    display: flex;
+    gap: var(--spacing-md);
+}
+
+.filter-form {
+    padding: var(--spacing-lg);
+}
+
+.filter-inputs {
+    display: flex;
+    gap: var(--spacing-lg);
+    align-items: end;
+}
+
+.date-separator {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    margin: var(--spacing-xl) 0 var(--spacing-lg);
+}
+
+.date-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border-color), transparent);
+}
+
+.date-label {
+    padding: var(--spacing-sm) var(--spacing-lg);
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+    color: white;
+    border-radius: var(--radius-lg);
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.agenda-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+    padding: var(--spacing-lg);
+}
+
+.agenda-item {
+    display: flex;
+    gap: var(--spacing-lg);
+    padding: var(--spacing-lg);
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    transition: all var(--transition-fast);
+    position: relative;
+}
+
+.agenda-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    border-radius: var(--radius-sm);
+}
+
+.agenda-item.status-confirmado::before {
+    background: var(--success);
+}
+
+.agenda-item.status-aguardando_confirmacao::before {
+    background: var(--warning);
+}
+
+.agenda-item.status-cancelado::before {
+    background: var(--error);
+}
+
+.agenda-item.status-concluido::before {
+    background: var(--info);
+}
+
+.agenda-item.status-pendente::before {
+    background: var(--text-muted);
+}
+
+.agenda-item:hover {
+    background-color: var(--bg-hover);
+    border-color: var(--border-light);
+    transform: translateY(-2px);
+}
+
+.agenda-time {
+    min-width: 80px;
+    text-align: center;
+    padding: var(--spacing-md);
+    background-color: var(--bg-card);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.agenda-time .time {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--primary-light);
+}
+
+.agenda-content {
+    flex: 1;
+}
+
+.agenda-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-md);
+}
+
+.cliente-nome {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.agenda-details {
+    margin-bottom: var(--spacing-md);
+}
+
+.detail-row {
+    display: flex;
+    gap: var(--spacing-xl);
+    margin-bottom: var(--spacing-sm);
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}
+
+.detail-item i {
+    width: 16px;
+    height: 16px;
+    color: var(--text-muted);
+}
+
+.agenda-actions {
+    display: flex;
+    gap: var(--spacing-md);
+}
+
+.empty-state {
+    text-align: center;
+    padding: var(--spacing-2xl);
+}
+
+.empty-icon {
+    width: 64px;
+    height: 64px;
+    color: var(--text-muted);
+    margin: 0 auto var(--spacing-lg);
+}
+
+.empty-state h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-sm);
+}
+
+.empty-state p {
+    color: var(--text-muted);
+}
+
+@media (max-width: 768px) {
+    .funcionario-header {
+        flex-direction: column;
+        gap: var(--spacing-lg);
+        text-align: center;
+    }
+    
+    .funcionario-info {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .filter-inputs {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .agenda-item {
+        flex-direction: column;
+        gap: var(--spacing-md);
+    }
+    
+    .agenda-time {
+        min-width: auto;
+        align-self: flex-start;
+    }
+    
+    .detail-row {
+        flex-direction: column;
+        gap: var(--spacing-sm);
+    }
+    
+    .agenda-actions {
+        justify-content: center;
+    }
+}
+</style>
+{% endblock %}

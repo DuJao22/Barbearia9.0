@@ -1,0 +1,330 @@
+{% extends "base.html" %}
+
+{% block title %}Meus Agendamentos{% endblock %}
+{% block page_title %}Meus Agendamentos{% endblock %}
+
+{% block content %}
+<!-- Programa de Fidelidade -->
+{% if fidelidade %}
+<div class="card mb-6">
+    <div class="card-header">
+        <h3 class="card-title">
+            <i data-lucide="gift"></i>
+            Programa de Fidelidade
+        </h3>
+        <p class="card-subtitle">Acumule cortes e ganhe recompensas</p>
+    </div>
+
+    <div class="fidelidade-container">
+        <div class="fidelidade-stats">
+            <div class="fidelidade-stat">
+                <div class="stat-icon success">
+                    <i data-lucide="scissors"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value">{{ fidelidade[2] }}</div>
+                    <div class="stat-label">Cortes Realizados</div>
+                </div>
+            </div>
+
+            <div class="fidelidade-stat">
+                <div class="stat-icon warning">
+                    <i data-lucide="gift"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value">{{ fidelidade[3] }}</div>
+                    <div class="stat-label">Cortes Gratuitos</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="fidelidade-progress">
+            <div class="progress-info">
+                <span>Progresso para o próximo corte gratuito</span>
+                <span>{{ fidelidade[2] % 10 }}/10</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: {{ (fidelidade[2] % 10) * 10 }}%"></div>
+            </div>
+            <p class="progress-text">
+                {% set restantes = 10 - (fidelidade[2] % 10) %}
+                {% if restantes == 10 %}
+                    Faça 10 cortes para ganhar 1 gratuito!
+                {% else %}
+                    Faltam {{ restantes }} corte{{ 's' if restantes > 1 else '' }} para ganhar 1 gratuito!
+                {% endif %}
+            </p>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Ação Rápida -->
+<div class="mb-6">
+    <a href="{{ url_for('agendamento') }}" class="btn btn-primary btn-lg">
+        <i data-lucide="calendar-plus"></i>
+        Novo Agendamento
+    </a>
+</div>
+
+<!-- Lista de Agendamentos -->
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">
+            <i data-lucide="calendar"></i>
+            Histórico de Agendamentos
+        </h3>
+        <p class="card-subtitle">Seus agendamentos passados e futuros</p>
+    </div>
+
+    {% if agendamentos %}
+    <div class="agendamentos-list">
+        {% for agendamento in agendamentos %}
+        <div class="agendamento-item">
+            <div class="agendamento-info">
+                <div class="agendamento-header">
+                    <h4 class="agendamento-servico">{{ agendamento[2] }}</h4>
+                    <span class="badge badge-{{ 'success' if agendamento[4] == 'confirmado' else 'warning' if agendamento[4] == 'aguardando_confirmacao' else 'error' if agendamento[4] == 'cancelado' else 'info' if agendamento[4] == 'concluido' else 'secondary' }}">
+                        {% if agendamento[4] == 'confirmado' %}
+                            <i data-lucide="check-circle"></i>
+                            Confirmado
+                        {% elif agendamento[4] == 'aguardando_confirmacao' %}
+                            <i data-lucide="clock"></i>
+                            Aguardando
+                        {% elif agendamento[4] == 'cancelado' %}
+                            <i data-lucide="x-circle"></i>
+                            Cancelado
+                        {% elif agendamento[4] == 'concluido' %}
+                            <i data-lucide="check-circle-2"></i>
+                            Concluído
+                        {% else %}
+                            <i data-lucide="clock"></i>
+                            Pendente
+                        {% endif %}
+                    </span>
+                </div>
+
+                <div class="agendamento-details">
+                    <div class="detail-item">
+                        <i data-lucide="user"></i>
+                        <span>{{ agendamento[1] }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <i data-lucide="calendar"></i>
+                        <span>{{ agendamento[3] }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <i data-lucide="dollar-sign"></i>
+                        <span>R$ {{ "%.2f"|format(agendamento[5]) }}</span>
+                    </div>
+                </div>
+            </div>
+
+            {% if agendamento[4] == 'pendente' %}
+            <div class="agendamento-actions">
+                <a href="{{ url_for('pagamento_pix', agendamento_id=agendamento[0]) }}" 
+                   class="btn btn-primary btn-sm">
+                    <i data-lucide="credit-card"></i>
+                    Pagar
+                </a>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i data-lucide="calendar-x" class="empty-icon"></i>
+        <h3>Nenhum agendamento encontrado</h3>
+        <p>Você ainda não possui agendamentos. Que tal fazer o primeiro?</p>
+        <a href="{{ url_for('agendamento') }}" class="btn btn-primary">
+            <i data-lucide="calendar-plus"></i>
+            Fazer Agendamento
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.fidelidade-container {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--spacing-2xl);
+    align-items: center;
+}
+
+.fidelidade-stats {
+    display: flex;
+    gap: var(--spacing-xl);
+}
+
+.fidelidade-stat {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-lg);
+    background-color: var(--bg-tertiary);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
+}
+
+.fidelidade-progress {
+    flex: 1;
+}
+
+.progress-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-sm);
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.progress-bar {
+    width: 100%;
+    height: 12px;
+    background-color: var(--bg-primary);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    margin-bottom: var(--spacing-sm);
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--success), var(--success-light));
+    border-radius: var(--radius-md);
+    transition: width var(--transition-normal);
+}
+
+.progress-text {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+.agendamentos-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+.agendamento-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-lg);
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    transition: all var(--transition-fast);
+}
+
+.agendamento-item:hover {
+    background-color: var(--bg-hover);
+    border-color: var(--border-light);
+}
+
+.agendamento-info {
+    flex: 1;
+}
+
+.agendamento-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-md);
+}
+
+.agendamento-servico {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.agendamento-details {
+    display: flex;
+    gap: var(--spacing-xl);
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}
+
+.detail-item i {
+    width: 16px;
+    height: 16px;
+    color: var(--text-muted);
+}
+
+.agendamento-actions {
+    margin-left: var(--spacing-lg);
+}
+
+.empty-state {
+    text-align: center;
+    padding: var(--spacing-2xl);
+}
+
+.empty-icon {
+    width: 64px;
+    height: 64px;
+    color: var(--text-muted);
+    margin: 0 auto var(--spacing-lg);
+}
+
+.empty-state h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-sm);
+}
+
+.empty-state p {
+    color: var(--text-muted);
+    margin-bottom: var(--spacing-lg);
+}
+
+@media (max-width: 768px) {
+    .fidelidade-container {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-lg);
+    }
+    
+    .fidelidade-stats {
+        justify-content: center;
+    }
+    
+    .agendamento-item {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--spacing-lg);
+    }
+    
+    .agendamento-actions {
+        margin-left: 0;
+        text-align: center;
+    }
+    
+    .agendamento-details {
+        flex-direction: column;
+        gap: var(--spacing-sm);
+    }
+}
+
+@media (max-width: 480px) {
+    .fidelidade-stats {
+        flex-direction: column;
+        gap: var(--spacing-md);
+    }
+    
+    .fidelidade-stat {
+        justify-content: center;
+    }
+}
+</style>
+{% endblock %}

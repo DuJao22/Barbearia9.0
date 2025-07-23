@@ -1,0 +1,404 @@
+{% extends "base.html" %}
+
+{% block title %}Editar Cliente{% endblock %}
+{% block page_title %}Editar Cliente{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-2 gap-6">
+    <!-- Formulário de Edição -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i data-lucide="edit"></i>
+                Editar Cliente
+            </h3>
+            <p class="card-subtitle">Atualize as informações do cliente</p>
+        </div>
+
+        <form method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="nome" class="form-label">
+                    <i data-lucide="user"></i>
+                    Nome completo
+                </label>
+                <input type="text" 
+                       id="nome" 
+                       name="nome" 
+                       class="form-input" 
+                       value="{{ cliente[1] if cliente else '' }}"
+                       required>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div class="form-group">
+                    <label for="telefone" class="form-label">
+                        <i data-lucide="phone"></i>
+                        Telefone
+                    </label>
+                    <input type="tel" 
+                           id="telefone" 
+                           name="telefone" 
+                           class="form-input" 
+                           value="{{ cliente[3] if cliente else '' }}"
+                           placeholder="(11) 99999-9999">
+                </div>
+
+                <div class="form-group">
+                    <label for="whatsapp" class="form-label">
+                        <i data-lucide="message-circle"></i>
+                        WhatsApp
+                    </label>
+                    <input type="tel" 
+                           id="whatsapp" 
+                           name="whatsapp" 
+                           class="form-input" 
+                           value="{{ cliente[4] if cliente else '' }}"
+                           placeholder="11999999999">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="foto_perfil" class="form-label">
+                    <i data-lucide="camera"></i>
+                    Foto de perfil
+                </label>
+                <input type="file" 
+                       id="foto_perfil" 
+                       name="foto_perfil" 
+                       class="form-file"
+                       accept="image/*">
+                <small class="form-help">Deixe em branco para manter a foto atual</small>
+            </div>
+
+            <div class="form-actions">
+                <a href="{{ url_for('listar_clientes') }}" class="btn btn-secondary">
+                    <i data-lucide="arrow-left"></i>
+                    Voltar
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i data-lucide="save"></i>
+                    Salvar Alterações
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Preview e Informações -->
+    <div class="space-y-6">
+        <!-- Preview do Cliente -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i data-lucide="eye"></i>
+                    Preview do Cliente
+                </h3>
+            </div>
+
+            <div class="cliente-preview">
+                <div class="cliente-avatar">
+                    <img src="{{ cliente[5] if cliente and cliente[5] else '/static/uploads/default-user.jpg' }}" 
+                         alt="Foto do cliente" 
+                         class="avatar-img"
+                         id="avatarPreview">
+                    <div class="avatar-overlay">
+                        <i data-lucide="camera"></i>
+                    </div>
+                </div>
+
+                <div class="cliente-info">
+                    <h4 class="cliente-name">{{ cliente[1] if cliente else 'Nome do cliente' }}</h4>
+                    <p class="cliente-email">{{ cliente[2] if cliente else 'email@exemplo.com' }}</p>
+                    <span class="cliente-role badge badge-info">
+                        <i data-lucide="user"></i>
+                        Cliente
+                    </span>
+                </div>
+            </div>
+
+            <div class="cliente-details">
+                <div class="detail-item">
+                    <i data-lucide="phone"></i>
+                    <div>
+                        <span class="detail-label">Telefone</span>
+                        <span class="detail-value">{{ cliente[3] if cliente and cliente[3] else 'Não informado' }}</span>
+                    </div>
+                </div>
+
+                <div class="detail-item">
+                    <i data-lucide="message-circle"></i>
+                    <div>
+                        <span class="detail-label">WhatsApp</span>
+                        <span class="detail-value">{{ cliente[4] if cliente and cliente[4] else 'Não informado' }}</span>
+                    </div>
+                </div>
+
+                <div class="detail-item">
+                    <i data-lucide="calendar"></i>
+                    <div>
+                        <span class="detail-label">Membro desde</span>
+                        <span class="detail-value">{{ datetime.now().strftime('%B de %Y') }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ações Rápidas -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i data-lucide="zap"></i>
+                    Ações Rápidas
+                </h3>
+            </div>
+
+            <div class="quick-actions">
+                <a href="{{ url_for('listar_clientes') }}" class="quick-action">
+                    <div class="quick-action-icon primary">
+                        <i data-lucide="users"></i>
+                    </div>
+                    <div class="quick-action-content">
+                        <h4>Todos Clientes</h4>
+                        <p>Voltar à lista</p>
+                    </div>
+                </a>
+
+                <a href="{{ url_for('dashboard_admin') }}" class="quick-action">
+                    <div class="quick-action-icon secondary">
+                        <i data-lucide="layout-dashboard"></i>
+                    </div>
+                    <div class="quick-action-content">
+                        <h4>Dashboard</h4>
+                        <p>Ir para o painel</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.space-y-6 > * + * {
+    margin-top: var(--spacing-xl);
+}
+
+.cliente-preview {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-lg);
+    padding: var(--spacing-lg);
+    background-color: var(--bg-tertiary);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
+    margin-bottom: var(--spacing-lg);
+}
+
+.cliente-avatar {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid var(--primary-color);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.cliente-avatar:hover {
+    border-color: var(--primary-light);
+}
+
+.cliente-avatar:hover .avatar-overlay {
+    opacity: 1;
+}
+
+.avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatar-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+}
+
+.avatar-overlay i {
+    width: 24px;
+    height: 24px;
+    color: white;
+}
+
+.cliente-info {
+    flex: 1;
+}
+
+.cliente-name {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-xs);
+}
+
+.cliente-email {
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-sm);
+}
+
+.cliente-role {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+.cliente-details {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+    background-color: var(--bg-tertiary);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+}
+
+.detail-item i {
+    width: 20px;
+    height: 20px;
+    color: var(--primary-light);
+    flex-shrink: 0;
+}
+
+.detail-item div {
+    flex: 1;
+}
+
+.detail-label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: var(--spacing-xs);
+}
+
+.detail-value {
+    display: block;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.quick-actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.quick-action {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-lg);
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    text-decoration: none;
+    color: var(--text-primary);
+    transition: all var(--transition-fast);
+}
+
+.quick-action:hover {
+    background-color: var(--bg-hover);
+    border-color: var(--border-light);
+    transform: translateY(-2px);
+}
+
+.quick-action-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.quick-action-content h4 {
+    font-weight: 600;
+    margin-bottom: var(--spacing-xs);
+}
+
+.quick-action-content p {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+.form-help {
+    display: block;
+    margin-top: var(--spacing-xs);
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.form-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-xl);
+}
+
+@media (max-width: 768px) {
+    .grid-cols-2 {
+        grid-template-columns: 1fr;
+    }
+    
+    .cliente-preview {
+        flex-direction: column;
+        text-align: center;
+        gap: var(--spacing-md);
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const fileInput = document.getElementById('foto_perfil');
+    const avatarPreview = document.getElementById('avatarPreview');
+    const clienteAvatar = document.querySelector('.cliente-avatar');
+
+    // Preview da imagem selecionada
+    fileInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                avatarPreview.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Clique no avatar para abrir seletor de arquivo
+    clienteAvatar.addEventListener('click', function() {
+        fileInput.click();
+    });
+});
+</script>
+{% endblock %}

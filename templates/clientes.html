@@ -1,0 +1,290 @@
+{% extends "base.html" %}
+
+{% block title %}Clientes{% endblock %}
+{% block page_title %}Clientes{% endblock %}
+
+{% block content %}
+<!-- Estatísticas dos Clientes -->
+<div class="stats-grid mb-6">
+    <div class="stat-card">
+        <div class="stat-icon primary">
+            <i data-lucide="users"></i>
+        </div>
+        <div class="stat-content">
+            <div class="stat-value">{{ clientes|length }}</div>
+            <div class="stat-label">Total de Clientes</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon success">
+            <i data-lucide="user-check"></i>
+        </div>
+        <div class="stat-content">
+            <div class="stat-value">
+                {% set ativos = clientes|selectattr('6', 'gt', 0)|list|length %}
+                {{ ativos }}
+            </div>
+            <div class="stat-label">Clientes Ativos</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon warning">
+            <i data-lucide="gift"></i>
+        </div>
+        <div class="stat-content">
+            <div class="stat-value">
+                {% set com_gratuitos = clientes|selectattr('7', 'gt', 0)|list|length %}
+                {{ com_gratuitos }}
+            </div>
+            <div class="stat-label">Com Cortes Gratuitos</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon info">
+            <i data-lucide="scissors"></i>
+        </div>
+        <div class="stat-content">
+            <div class="stat-value">
+                {% set total_cortes = clientes|sum(attribute='6') %}
+                {{ total_cortes }}
+            </div>
+            <div class="stat-label">Total de Cortes</div>
+        </div>
+    </div>
+</div>
+
+<!-- Lista de Clientes -->
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">
+            <i data-lucide="users"></i>
+            Lista de Clientes
+        </h3>
+        <p class="card-subtitle">Gerencie todos os clientes cadastrados</p>
+    </div>
+
+    {% if clientes %}
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Foto</th>
+                    <th>Cliente</th>
+                    <th>Contato</th>
+                    <th>Fidelidade</th>
+                    <th>Cortes Gratuitos</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cliente in clientes %}
+                <tr>
+                    <td>
+                        <img src="{{ cliente[5] or '/static/uploads/default-user.jpg' }}" 
+                             alt="Foto" 
+                             class="table-avatar">
+                    </td>
+                    <td>
+                        <div>
+                            <div class="font-medium">{{ cliente[1] }}</div>
+                            <div class="text-sm text-muted">{{ cliente[2] }}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="contact-info">
+                            {% if cliente[3] %}
+                            <div class="contact-item">
+                                <i data-lucide="phone"></i>
+                                <span>{{ cliente[3] }}</span>
+                            </div>
+                            {% endif %}
+                            {% if cliente[4] %}
+                            <div class="contact-item">
+                                <i data-lucide="message-circle"></i>
+                                <span>{{ cliente[4] }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td>
+                        <div class="fidelidade-info">
+                            <div class="fidelidade-progress">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: {{ (cliente[6] % 10) * 10 }}%"></div>
+                                </div>
+                                <div class="progress-text">
+                                    {{ cliente[6] % 10 }}/10
+                                </div>
+                            </div>
+                            <div class="total-cortes">
+                                <span class="badge badge-info">{{ cliente[6] }} cortes</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="text-center">
+                            {% if cliente[7] > 0 %}
+                                <span class="badge badge-success">
+                                    <i data-lucide="gift"></i>
+                                    {{ cliente[7] }}
+                                </span>
+                            {% else %}
+                                <span class="badge badge-secondary">
+                                    <i data-lucide="x"></i>
+                                    0
+                                </span>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <a href="{{ url_for('editar_cliente', cliente_id=cliente[0]) }}" 
+                               class="btn btn-secondary btn-sm">
+                                <i data-lucide="edit"></i>
+                                Editar
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i data-lucide="users" class="empty-icon"></i>
+        <h3>Nenhum cliente cadastrado</h3>
+        <p>Os clientes aparecerão aqui quando se cadastrarem no sistema</p>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.table-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--primary-color);
+}
+
+.contact-info {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.contact-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.contact-item i {
+    width: 14px;
+    height: 14px;
+    color: var(--text-muted);
+}
+
+.fidelidade-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.fidelidade-progress {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-xs);
+    width: 100%;
+}
+
+.progress-bar {
+    width: 80px;
+    height: 8px;
+    background-color: var(--bg-primary);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--success), var(--success-light));
+    border-radius: var(--radius-md);
+    transition: width var(--transition-normal);
+}
+
+.progress-text {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.total-cortes {
+    display: flex;
+    justify-content: center;
+}
+
+.action-buttons {
+    display: flex;
+    gap: var(--spacing-sm);
+    justify-content: center;
+}
+
+.empty-state {
+    text-align: center;
+    padding: var(--spacing-2xl);
+}
+
+.empty-icon {
+    width: 64px;
+    height: 64px;
+    color: var(--text-muted);
+    margin: 0 auto var(--spacing-lg);
+}
+
+.empty-state h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-sm);
+}
+
+.empty-state p {
+    color: var(--text-muted);
+}
+
+.font-medium {
+    font-weight: 500;
+}
+
+.text-sm {
+    font-size: 0.875rem;
+}
+
+.text-center {
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    .table-container {
+        overflow-x: auto;
+    }
+    
+    .table {
+        min-width: 800px;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+    }
+}
+</style>
+{% endblock %}

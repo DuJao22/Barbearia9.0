@@ -1,0 +1,440 @@
+{% extends "base.html" %}
+
+{% block title %}Meu Perfil{% endblock %}
+{% block page_title %}Meu Perfil{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-2 gap-6">
+    <!-- Formulário de Perfil -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i data-lucide="user"></i>
+                Informações Pessoais
+            </h3>
+            <p class="card-subtitle">Atualize seus dados pessoais</p>
+        </div>
+
+        <form method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="nome" class="form-label">
+                    <i data-lucide="user"></i>
+                    Nome completo
+                </label>
+                <input type="text" 
+                       id="nome" 
+                       name="nome" 
+                       class="form-input" 
+                       value="{{ usuario[1] if usuario else '' }}"
+                       required>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div class="form-group">
+                    <label for="telefone" class="form-label">
+                        <i data-lucide="phone"></i>
+                        Telefone
+                    </label>
+                    <input type="tel" 
+                           id="telefone" 
+                           name="telefone" 
+                           class="form-input" 
+                           value="{{ usuario[3] if usuario else '' }}"
+                           placeholder="(11) 99999-9999">
+                </div>
+
+                <div class="form-group">
+                    <label for="whatsapp" class="form-label">
+                        <i data-lucide="message-circle"></i>
+                        WhatsApp
+                    </label>
+                    <input type="tel" 
+                           id="whatsapp" 
+                           name="whatsapp" 
+                           class="form-input" 
+                           value="{{ usuario[4] if usuario else '' }}"
+                           placeholder="11999999999">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="foto_perfil" class="form-label">
+                    <i data-lucide="camera"></i>
+                    Foto de perfil
+                </label>
+                <input type="file" 
+                       id="foto_perfil" 
+                       name="foto_perfil" 
+                       class="form-file"
+                       accept="image/*">
+                <small class="form-help">Formatos aceitos: JPG, PNG, GIF (máx. 16MB)</small>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i data-lucide="save"></i>
+                    Salvar Alterações
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Informações da Conta -->
+    <div class="space-y-6">
+        <!-- Preview do Perfil -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i data-lucide="eye"></i>
+                    Preview do Perfil
+                </h3>
+            </div>
+
+            <div class="profile-preview">
+                <div class="profile-avatar">
+                    <img src="{{ usuario[5] if usuario and usuario[5] else '/static/uploads/default-user.jpg' }}" 
+                         alt="Foto do perfil" 
+                         class="avatar-img"
+                         id="avatarPreview">
+                    <div class="avatar-overlay">
+                        <i data-lucide="camera"></i>
+                    </div>
+                </div>
+
+                <div class="profile-info">
+                    <h4 class="profile-name">{{ usuario[1] if usuario else 'Nome do usuário' }}</h4>
+                    <p class="profile-email">{{ usuario[2] if usuario else 'email@exemplo.com' }}</p>
+                    <span class="profile-role badge badge-{{ 'warning' if session.tipo_usuario == 'admin' else 'success' if session.tipo_usuario == 'funcionario' else 'info' }}">
+                        <i data-lucide="{{ 'crown' if session.tipo_usuario == 'admin' else 'scissors' if session.tipo_usuario == 'funcionario' else 'user' }}"></i>
+                        {{ session.tipo_usuario.title() }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Programa de Fidelidade (apenas para clientes) -->
+        {% if session.tipo_usuario == 'cliente' and fidelidade %}
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i data-lucide="gift"></i>
+                    Programa de Fidelidade
+                </h3>
+                <p class="card-subtitle">Seu progresso no programa de fidelidade</p>
+            </div>
+
+            <div class="fidelidade-card">
+                <div class="fidelidade-stats">
+                    <div class="fidelidade-stat">
+                        <div class="stat-icon success">
+                            <i data-lucide="scissors"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value">{{ fidelidade[2] }}</div>
+                            <div class="stat-label">Cortes Realizados</div>
+                        </div>
+                    </div>
+
+                    <div class="fidelidade-stat">
+                        <div class="stat-icon warning">
+                            <i data-lucide="gift"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value">{{ fidelidade[3] }}</div>
+                            <div class="stat-label">Cortes Gratuitos</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="fidelidade-progress">
+                    <div class="progress-info">
+                        <span>Progresso para o próximo corte gratuito</span>
+                        <span>{{ fidelidade[2] % 10 }}/10</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: {{ (fidelidade[2] % 10) * 10 }}%"></div>
+                    </div>
+                    <p class="progress-text">
+                        {% set restantes = 10 - (fidelidade[2] % 10) %}
+                        {% if restantes == 10 %}
+                            Faça 10 cortes para ganhar 1 gratuito!
+                        {% else %}
+                            Faltam {{ restantes }} corte{{ 's' if restantes > 1 else '' }} para ganhar 1 gratuito!
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Informações da Conta -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i data-lucide="info"></i>
+                    Informações da Conta
+                </h3>
+            </div>
+
+            <div class="account-info">
+                <div class="info-item">
+                    <i data-lucide="mail"></i>
+                    <div>
+                        <span class="info-label">E-mail</span>
+                        <span class="info-value">{{ usuario[2] if usuario else 'Não informado' }}</span>
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <i data-lucide="shield"></i>
+                    <div>
+                        <span class="info-label">Tipo de conta</span>
+                        <span class="info-value">{{ session.tipo_usuario.title() }}</span>
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <i data-lucide="calendar"></i>
+                    <div>
+                        <span class="info-label">Membro desde</span>
+                        <span class="info-value">{{ datetime.now().strftime('%B de %Y') }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.space-y-6 > * + * {
+    margin-top: var(--spacing-xl);
+}
+
+.profile-preview {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-lg);
+    padding: var(--spacing-lg);
+    background-color: var(--bg-tertiary);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
+}
+
+.profile-avatar {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid var(--primary-color);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.profile-avatar:hover {
+    border-color: var(--primary-light);
+}
+
+.profile-avatar:hover .avatar-overlay {
+    opacity: 1;
+}
+
+.avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatar-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+}
+
+.avatar-overlay i {
+    width: 24px;
+    height: 24px;
+    color: white;
+}
+
+.profile-info {
+    flex: 1;
+}
+
+.profile-name {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-xs);
+}
+
+.profile-email {
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-sm);
+}
+
+.profile-role {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+.fidelidade-card {
+    padding: var(--spacing-lg);
+}
+
+.fidelidade-stats {
+    display: flex;
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-xl);
+}
+
+.fidelidade-stat {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    flex: 1;
+    padding: var(--spacing-lg);
+    background-color: var(--bg-tertiary);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
+}
+
+.fidelidade-progress {
+    margin-top: var(--spacing-lg);
+}
+
+.progress-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-sm);
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.progress-bar {
+    width: 100%;
+    height: 12px;
+    background-color: var(--bg-primary);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    margin-bottom: var(--spacing-sm);
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--success), var(--success-light));
+    border-radius: var(--radius-md);
+    transition: width var(--transition-normal);
+}
+
+.progress-text {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+.account-info {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+    background-color: var(--bg-tertiary);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+}
+
+.info-item i {
+    width: 20px;
+    height: 20px;
+    color: var(--primary-light);
+    flex-shrink: 0;
+}
+
+.info-item div {
+    flex: 1;
+}
+
+.info-label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: var(--spacing-xs);
+}
+
+.info-value {
+    display: block;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.form-help {
+    display: block;
+    margin-top: var(--spacing-xs);
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.form-actions {
+    margin-top: var(--spacing-xl);
+}
+
+@media (max-width: 768px) {
+    .grid-cols-2 {
+        grid-template-columns: 1fr;
+    }
+    
+    .profile-preview {
+        flex-direction: column;
+        text-align: center;
+        gap: var(--spacing-md);
+    }
+    
+    .fidelidade-stats {
+        flex-direction: column;
+        gap: var(--spacing-md);
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const fileInput = document.getElementById('foto_perfil');
+    const avatarPreview = document.getElementById('avatarPreview');
+    const profileAvatar = document.querySelector('.profile-avatar');
+
+    // Preview da imagem selecionada
+    fileInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                avatarPreview.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Clique no avatar para abrir seletor de arquivo
+    profileAvatar.addEventListener('click', function() {
+        fileInput.click();
+    });
+});
+</script>
+{% endblock %}

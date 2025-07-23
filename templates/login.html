@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}Login - {{ configuracoes_barbearia.nome_barbearia if configuracoes_barbearia else 'Barbearia Premium' }}{% endblock %}
+
+{% block body_class %}auth-page{% endblock %}
+
+{% block auth_content %}
+<div class="auth-card animate-fade-in">
+    <div class="auth-header">
+        <img src="{{ configuracoes_barbearia.logo_url if configuracoes_barbearia else '/static/uploads/logo-barbearia.jpg' }}" 
+             alt="Logo" class="auth-logo">
+        <h1 class="auth-title">Bem-vindo de volta</h1>
+        <p class="auth-subtitle">Faça login para acessar sua conta</p>
+    </div>
+
+    <form method="POST" class="auth-form">
+        <div class="form-group">
+            <label for="email" class="form-label">
+                <i data-lucide="mail"></i>
+                E-mail
+            </label>
+            <input type="email" 
+                   id="email" 
+                   name="email" 
+                   class="form-input" 
+                   placeholder="seu@email.com"
+                   required>
+        </div>
+
+        <div class="form-group">
+            <label for="senha" class="form-label">
+                <i data-lucide="lock"></i>
+                Senha
+            </label>
+            <input type="password" 
+                   id="senha" 
+                   name="senha" 
+                   class="form-input" 
+                   placeholder="••••••••"
+                   required>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-lg w-full">
+            <i data-lucide="log-in"></i>
+            Entrar
+        </button>
+    </form>
+
+    <div class="auth-footer">
+        <p class="text-center mt-4">
+            <span class="text-muted">Não tem uma conta?</span>
+            <a href="{{ url_for('cadastro') }}" class="text-primary">Cadastre-se aqui</a>
+        </p>
+    </div>
+</div>
+
+<style>
+.auth-form {
+    margin-bottom: var(--spacing-lg);
+}
+
+.form-label {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-sm);
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.form-label i {
+    width: 16px;
+    height: 16px;
+}
+
+.auth-footer {
+    border-top: 1px solid var(--border-color);
+    padding-top: var(--spacing-lg);
+}
+
+.text-primary {
+    color: var(--primary-light);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color var(--transition-fast);
+}
+
+.text-primary:hover {
+    color: var(--primary-color);
+}
+
+.text-muted {
+    color: var(--text-muted);
+}
+</style>
+{% endblock %}

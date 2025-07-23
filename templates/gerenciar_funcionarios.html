@@ -1,0 +1,268 @@
+{% extends "base.html" %}
+
+{% block title %}Gerenciar Funcionários{% endblock %}
+{% block page_title %}Gerenciar Funcionários{% endblock %}
+
+{% block content %}
+<!-- Botão Adicionar Funcionário -->
+<div class="mb-6">
+    <button class="btn btn-primary" onclick="toggleModal('addFuncionarioModal')">
+        <i data-lucide="user-plus"></i>
+        Adicionar Funcionário
+    </button>
+</div>
+
+<!-- Lista de Funcionários -->
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">
+            <i data-lucide="users"></i>
+            Funcionários Cadastrados
+        </h3>
+        <p class="card-subtitle">Gerencie sua equipe de funcionários</p>
+    </div>
+
+    {% if funcionarios %}
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Foto</th>
+                    <th>Nome</th>
+                    <th>Contato</th>
+                    <th>Valor/Comissão</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for funcionario in funcionarios %}
+                <tr>
+                    <td>
+                        <img src="{{ funcionario[8] or '/static/uploads/default-user.jpg' }}" 
+                             alt="Foto" 
+                             class="table-avatar">
+                    </td>
+                    <td>
+                        <div>
+                            <div class="font-medium">{{ funcionario[1] }}</div>
+                            <div class="text-sm text-muted">{{ funcionario[2] }}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="contact-info">
+                            {% if funcionario[3] %}
+                            <div class="contact-item">
+                                <i data-lucide="phone"></i>
+                                <span>{{ funcionario[3] }}</span>
+                            </div>
+                            {% endif %}
+                            {% if funcionario[4] %}
+                            <div class="contact-item">
+                                <i data-lucide="message-circle"></i>
+                                <span>{{ funcionario[4] }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td>
+                        <div class="valor-info">
+                            {% if funcionario[6] == 'porcentagem' %}
+                                <span class="badge badge-info">{{ funcionario[5] }}%</span>
+                                <small class="text-muted">Comissão</small>
+                            {% else %}
+                                <span class="badge badge-success">R$ {{ "%.2f"|format(funcionario[5]) }}</span>
+                                <small class="text-muted">Valor fixo</small>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td>
+                        {% if funcionario[7] %}
+                            <span class="badge badge-success">
+                                <i data-lucide="check-circle"></i>
+                                Ativo
+                            </span>
+                        {% else %}
+                            <span class="badge badge-error">
+                                <i data-lucide="x-circle"></i>
+                                Inativo
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <a href="{{ url_for('editar_funcionario', funcionario_id=funcionario[0]) }}" 
+                               class="btn btn-secondary btn-sm">
+                                <i data-lucide="edit"></i>
+                                Editar
+                            </a>
+                            <a href="{{ url_for('agenda_funcionario', funcionario_id=funcionario[0]) }}" 
+                               class="btn btn-info btn-sm">
+                                <i data-lucide="calendar"></i>
+                                Agenda
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i data-lucide="users" class="empty-icon"></i>
+        <h3>Nenhum funcionário cadastrado</h3>
+        <p>Adicione funcionários para começar a gerenciar sua equipe</p>
+        <button class="btn btn-primary" onclick="toggleModal('addFuncionarioModal')">
+            <i data-lucide="user-plus"></i>
+            Adicionar Primeiro Funcionário
+        </button>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Modal Adicionar Funcionário -->
+<div class="modal" id="addFuncionarioModal">
+    <div class="modal-overlay" onclick="toggleModal('addFuncionarioModal')"></div>
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">
+                <i data-lucide="user-plus"></i>
+                Adicionar Funcionário
+            </h3>
+            <button class="modal-close" onclick="toggleModal('addFuncionarioModal')">
+                <i data-lucide="x"></i>
+            </button>
+        </div>
+
+        <form method="POST" action="{{ url_for('adicionar_funcionario') }}" enctype="multipart/form-data">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="nome" class="form-label">
+                        <i data-lucide="user"></i>
+                        Nome completo
+                    </label>
+                    <input type="text" 
+                           id="nome" 
+                           name="nome" 
+                           class="form-input" 
+                           placeholder="Nome do funcionário"
+                           required>
+                </div>
+
+                <div class="form-group">
+                    <label for="email" class="form-label">
+                        <i data-lucide="mail"></i>
+                        E-mail
+                    </label>
+                    <input type="email" 
+                           id="email" 
+                           name="email" 
+                           class="form-input" 
+                           placeholder="email@exemplo.com"
+                           required>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="form-group">
+                        <label for="telefone" class="form-label">
+                            <i data-lucide="phone"></i>
+                            Telefone
+                        </label>
+                        <input type="tel" 
+                               id="telefone" 
+                               name="telefone" 
+                               class="form-input" 
+                               placeholder="(11) 99999-9999"
+                               maxlength="15">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="whatsapp" class="form-label">
+                            <i data-lucide="message-circle"></i>
+                            WhatsApp
+                        </label>
+                        <input type="tel" 
+                               id="whatsapp" 
+                               name="whatsapp" 
+                               class="form-input" 
+                               placeholder="(11) 99999-9999"
+                               maxlength="15">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="senha" class="form-label">
+                        <i data-lucide="lock"></i>
+                        Senha
+                    </label>
+                    <input type="password" 
+                           id="senha" 
+                           name="senha" 
+                           class="form-input" 
+                           placeholder="••••••••"
+                           required>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="form-group">
+                        <label for="valor_corte" class="form-label">
+                            <i data-lucide="dollar-sign"></i>
+                            Valor/Comissão
+                        </label>
+                        <input type="number" 
+                               id="valor_corte" 
+                               name="valor_corte" 
+                               class="form-input" 
+                               placeholder="25.00"
+                               step="0.01"
+                               required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="tipo_pagamento" class="form-label">
+                            <i data-lucide="percent"></i>
+                            Tipo
+                        </label>
+                        <select id="tipo_pagamento" name="tipo_pagamento" class="form-select" required>
+                            <option value="fixo">Valor Fixo (R$)</option>
+                            <option value="porcentagem">Comissão (%)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="foto_perfil" class="form-label">
+                        <i data-lucide="camera"></i>
+                        Foto de perfil
+                    </label>
+                    <input type="file" 
+                           id="foto_perfil" 
+                           name="foto_perfil" 
+                           class="form-file"
+                           accept="image/*">
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="toggleModal('addFuncionarioModal')">
+                    <i data-lucide="x"></i>
+                    Cancelar
+                </button>
+                <button type="submit" class="btn btn-primary">
+                    <i data-lucide="save"></i>
+                    Adicionar Funcionário
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+/* Estilos movidos para o CSS principal */
+</style>
+
+<script>
+// Scripts movidos para o base.html
+</script>
+{% endblock %}
